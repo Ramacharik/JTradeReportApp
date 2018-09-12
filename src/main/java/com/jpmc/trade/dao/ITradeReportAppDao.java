@@ -1,11 +1,13 @@
 package com.jpmc.trade.dao;
 
-import com.jpmc.trade.util.TradeReportException;
+import java.util.List;
+
+import com.jpmc.trade.entity.TradeEntity;
+import com.jpmc.trade.exceptions.TradeReportException;
 
 public interface ITradeReportAppDao {
 	
-	public String generateDailyIncomingTradeReport() throws TradeReportException;
-	public String generateDailyOutGoingTradeReport() throws TradeReportException;
-	public String generateDailyEntitiesRankingReport() throws TradeReportException;
+	public List<TradeEntity>  fetchIncomingInstructionsData() throws TradeReportException;
+	public List<TradeEntity>  fetchOutgoingInstructionsData() throws TradeReportException;
 
 }

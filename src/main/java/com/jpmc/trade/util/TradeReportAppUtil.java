@@ -16,7 +16,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
+
+import com.jpmc.trade.constants.CurrencyType;
 import com.jpmc.trade.entity.TradeEntity;
+import com.jpmc.trade.exceptions.TradeReportException;
 
 public class TradeReportAppUtil {
 	
@@ -94,8 +97,9 @@ public class TradeReportAppUtil {
 	 * and prepare TradeEntity list
 	 * @param tradeType
 	 * @return List<TradeEntity>
+	 * @throws TradeReportException 
 	 */
-	public static List<TradeEntity> fetchAllInstructionsData(String tradeType) {
+	public static List<TradeEntity> fetchAllInstructionsData(String tradeType,String fileName) throws TradeReportException {
 	    List<TradeEntity> tradeEntityLst = null;
 		try {
 			String separator = ",";
@@ -106,8 +110,6 @@ public class TradeReportAppUtil {
 			DateFormat df = new SimpleDateFormat("dd/MMM/yyyy");
 			tradeEntityLst = new ArrayList<TradeEntity>();
  
-			String fileName = "trade_instructions_data.csv";
-			
 			ClassLoader classLoader = ClassLoader.getSystemClassLoader();
 			 
 			File file = new File(classLoader.getResource(fileName).getFile());
@@ -133,7 +135,7 @@ public class TradeReportAppUtil {
 			  } 
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			throw new TradeReportException("Unable to read file data");
 		}
 		return tradeEntityLst;
 	    
