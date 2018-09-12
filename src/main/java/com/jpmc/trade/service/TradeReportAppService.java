@@ -54,23 +54,26 @@ public class TradeReportAppService {
 	}
 	public String generateDailyEntitiesRankingReport()  {
 		String result = null;
+		
 		try {
+			int rank = 1;
 			List<TradeEntity> incomingTradeEntityLst = iTradeReportAppDao.fetchIncomingInstructionsData();
 			List<Entry<String, Double>> incomingRankinglist = TradeReportAppUtil
 					.evalEntityRakings(incomingTradeEntityLst);
 			
 			for (Map.Entry<String, Double> entry : incomingRankinglist) {
 				System.out.println(
-						"The Incoming Trade entity  is " + entry.getKey() + "  ==== rank is " + entry.getValue());
+						"The Incoming Trade entity  is " + entry.getKey() + "  ==== amount is " + entry.getValue() +" == Rank is "+(rank++));
 			}
 			System.out.println("=============The Incoming Trade entity  ranking is completed ==============");
+			rank = 1;
 			List<TradeEntity> outingTradeEntityLst = iTradeReportAppDao.fetchOutgoingInstructionsData();
 			List<Entry<String, Double>> ougoingRankinglist = TradeReportAppUtil
 					.evalEntityRakings(outingTradeEntityLst);
 			
 			for (Map.Entry<String, Double> entry : ougoingRankinglist) {
 				System.out.println(
-						"The Outgoing Trade entity  is " + entry.getKey() + "  ==== rank is " + entry.getValue());
+						"The Outgoing Trade entity  is " + entry.getKey() + "  ==== amount is " + entry.getValue() +" == Rank is "+(rank++));
 			}
 			System.out.println("=============The Outgoing Trade entity  ranking is completed ==============");
 			result = "SUCCESS";
