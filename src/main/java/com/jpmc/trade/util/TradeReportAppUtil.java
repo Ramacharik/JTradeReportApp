@@ -16,6 +16,15 @@ import com.jpmc.trade.exceptions.TradeReportException;
 
 public class TradeReportAppUtil {
 	
+	/**
+	 * Filter for Trade Type Buy
+	 * Filter Settlement data matched with requested report date
+	 * Evaluate Requested Report date Trade Settled amount
+	 * @param tradeEntityLst
+	 * @param reportDate
+	 * @param tradeType
+	 * @return Double 
+	 */
 	public static Double evalDailyTrade(List<TradeEntity>  tradeEntityLst ,LocalDate reportDate ,String tradeType) {
 		
 			Double totalTradeUsdAmt = tradeEntityLst.stream()
@@ -25,6 +34,15 @@ public class TradeReportAppUtil {
 			return totalTradeUsdAmt;
 	}
 	
+	/**
+	 * Filter for Trade Type Sell
+	 * Filter Settlement data matched with requested report date
+	 * Evaluate Requested Report date Trade Settled amount
+	 * @param tradeEntityLst
+	 * @param reportDate
+	 * @param tradeType
+	 * @return Double 
+	 */
 	public static List<Entry<String, Double>> evalEntityRakings(List<TradeEntity> tradeEntityLst,LocalDate reportDate,String tradeType) {
 		
 		Map<String, Double> totalIncomingByEntity = tradeEntityLst.stream()
@@ -44,8 +62,16 @@ public class TradeReportAppUtil {
 		return sortedRankinglist;
 	}
 	
-	public static  LocalDate evalSettlementDate(LocalDate origSettlementDate, String currencyType) throws TradeReportException 
-	    {
+	/**
+	 * Evaluate Update SettlementDate apply business rules
+	 * @param origSettlementDate
+	 * @param currencyType
+	 * @return LocalDate
+	 * @throws TradeReportException
+	 */
+	public static  LocalDate evalSettlementDate(LocalDate origSettlementDate, String currencyType) 
+			throws TradeReportException 
+	   {
 	    try {
 			if ((currencyType.equalsIgnoreCase(CurrencyType.AED.name())) 
 					|| (currencyType.equalsIgnoreCase(CurrencyType.SAR.name()))) {
