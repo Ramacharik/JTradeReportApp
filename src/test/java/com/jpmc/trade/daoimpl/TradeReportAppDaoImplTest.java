@@ -1,5 +1,6 @@
 package com.jpmc.trade.daoimpl;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.junit.Assert;
@@ -15,30 +16,31 @@ import com.jpmc.trade.util.TradeReportAppUtil;
 public class TradeReportAppDaoImplTest  {
 	     
 	      ITradeReportAppDao iTradeReportAppDao = new TradeReportAppDaoImpl();
-	      static List<TradeEntity> actualIncomingTradeList  = null;
-	      static List<TradeEntity> actualOutgoingingTradeList  = null;
-	      static String fileName = "trade_instructions_data.csv";
+	      static TradeEntity tradeEntity = new TradeEntity();
 	      
 		  @BeforeClass
 	      public static void  fetchActualData() throws TradeReportException  {
-	         
-			   actualIncomingTradeList  =  TradeReportAppUtil.fetchAllInstructionsData("B",fileName);
-			   actualOutgoingingTradeList  =  TradeReportAppUtil.fetchAllInstructionsData("S",fileName);
+			  tradeEntity.setName("foo1");
+			  tradeEntity.setTradeType("B");
+			  tradeEntity.setAgreedFx(0.50);
+			  tradeEntity.setCurrency("SGP");
+			  tradeEntity.setSettlementDate(LocalDate.of(2016,1,14));
+			  tradeEntity.setPricePerUnit(100.25);
+			  tradeEntity.setUnits(200);
+			  tradeEntity.setInstructionDate(LocalDate.of(2016,1,13));
 	      }
 		  
 		  @Test
-	      public void testevalDailyTrade()  throws TradeReportException{
+	      public void testCreateTradeEntry()  throws TradeReportException{
 	         
-			  List<TradeEntity> incomingTradeList =  iTradeReportAppDao.fetchIncomingInstructionsData();
-			  assertFalse(incomingTradeList.isEmpty());
-			  Assert.assertEquals(incomingTradeList.size(), actualIncomingTradeList.size());
+			  String result =  iTradeReportAppDao.createTradeEntry(tradeEntity);
+			  Assert.assertEquals("SUCCESS", result);
 	      }
 		  @Test
-	      public void testFetchOutgoingInstructionsData()  throws TradeReportException{
-	         
-			  List<TradeEntity> outgoingTradeList =  iTradeReportAppDao.fetchOutgoingInstructionsData();
-			  assertFalse(outgoingTradeList.isEmpty());
-			  Assert.assertEquals(outgoingTradeList.size(), actualOutgoingingTradeList.size());
+	      public void testFetchInstructionsData()  throws TradeReportException{
+			  String result =  iTradeReportAppDao.createTradeEntry(tradeEntity);
+			  List<TradeEntity> tradeEntityLst =  iTradeReportAppDao.fetchInstructionsData();
+			  assertFalse(tradeEntityLst.isEmpty());
 	      }
 		  
 		  

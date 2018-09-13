@@ -1,30 +1,16 @@
 package com.jpmc.trade.util;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
-import java.util.stream.Collectors;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.jpmc.trade.constants.CurrencyType;
-import com.jpmc.trade.dao.ITradeReportAppDao;
-import com.jpmc.trade.daoimpl.TradeReportAppDaoImpl;
 import com.jpmc.trade.entity.TradeEntity;
 import com.jpmc.trade.exceptions.TradeReportException;
 
@@ -38,54 +24,56 @@ public class TradeReportAppUtilTest {
 	 @BeforeClass
     public static void   fetchActualData()  {
        
-		  TradeEntity tradeEntity = new TradeEntity();
-		  tradeEntity.setName("foo");
+		 TradeEntity tradeEntity = new TradeEntity();
+		  tradeEntity.setName("foo1");
 		  tradeEntity.setTradeType("B");
 		  tradeEntity.setAgreedFx(0.50);
 		  tradeEntity.setCurrency("SGP");
-		  tradeEntity.setSettlementDate(new Date());
+		  tradeEntity.setSettlementDate(LocalDate.of(2016,1,14));
 		  tradeEntity.setPricePerUnit(100.25);
 		  tradeEntity.setUnits(200);
-		  tradeEntity.setInstructionDate(new Date());
-		  tradeEntity.setTradeUsdAmt(2000.25);
+		  tradeEntity.setInstructionDate(LocalDate.of(2016,1,13));
 		  actualIncomingTradeList.add(tradeEntity);
-		  TradeEntity tradeEntitySales = new TradeEntity();
-		  tradeEntitySales.setName("bar");
-		  tradeEntitySales.setTradeType("S");
-		  tradeEntitySales.setAgreedFx(0.10);
-		  tradeEntitySales.setCurrency("AED");
-		  tradeEntitySales.setSettlementDate(new Date());
-		  tradeEntitySales.setPricePerUnit(110.25);
-		  tradeEntitySales.setUnits(220);
-		  tradeEntitySales.setTradeUsdAmt(2000.25);
-		  tradeEntitySales.setInstructionDate(new Date());
-		  actualOutgoingingTradeList.add(tradeEntitySales);
+		  
+		  tradeEntity = new TradeEntity();
+		  tradeEntity.setName("foo2");
+		  tradeEntity.setTradeType("S");
+		  tradeEntity.setAgreedFx(0.22);
+		  tradeEntity.setCurrency("AED");
+		  tradeEntity.setSettlementDate(LocalDate.of(2016,1,7));
+		  tradeEntity.setPricePerUnit(22.21);
+		  tradeEntity.setUnits(300);
+		  tradeEntity.setInstructionDate(LocalDate.of(2016,1,5));
+		  actualOutgoingingTradeList.add(tradeEntity);
     }
 	@Test
 	public void testEvalDailyTrade( ) {
 		
-			Map<Date, Double> totalByDate = TradeReportAppUtil.evalDailyTrade(actualIncomingTradeList);
-			assertFalse(totalByDate.isEmpty());
+			Double totalTradeUsdAmt = TradeReportAppUtil.evalDailyTrade(actualIncomingTradeList, LocalDate.of(2016,1,14), "B");
+			Double actualTradeUsdAmt = 10025.0d;
+			assertEquals(actualTradeUsdAmt, totalTradeUsdAmt);;
 	}
 	@Test
 	public void testEvalEntityRakings() {
-		List<Entry<String, Double>> sortedRankinglist  = TradeReportAppUtil.evalEntityRakings(actualOutgoingingTradeList);
+		List<Entry<String, Double>> sortedRankinglist  = TradeReportAppUtil.evalEntityRakings(actualOutgoingingTradeList, LocalDate.of(2016,1,7), "S");
 		assertFalse(sortedRankinglist.isEmpty());
 	}
 	
 	@Test
-	public void  testFetchAllInstructionsData() throws TradeReportException {
+	public void  testEvalSettlementDate() throws TradeReportException   {
 		
-		List<TradeEntity> incomingTradeList =  TradeReportAppUtil.fetchAllInstructionsData("B",fileName);
-		assertFalse(incomingTradeList.isEmpty());
+		LocalDate adjustedSettleDate =  TradeReportAppUtil.evalSettlementDate(LocalDate.of(2016,1,14), "B");
+		assertEquals(LocalDate.of(2016,1,14),adjustedSettleDate);
 	}
 	
 	@Test(expected=TradeReportException.class)
-	public void  testFetchAllInstructionsDataException() throws TradeReportException {
+	public void testEvalSettlementDateException() throws TradeReportException {
 		
-		List<TradeEntity> incomingTradeList =  TradeReportAppUtil.fetchAllInstructionsData("B","");
-		assertFalse(incomingTradeList.isEmpty());
+		LocalDate adjustedSettleDate =  TradeReportAppUtil.evalSettlementDate(null, "B");
+		assertEquals(LocalDate.of(2016,1,14),adjustedSettleDate);
 	}
+	
+	
 
 
 }

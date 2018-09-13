@@ -7,7 +7,7 @@ import com.jpmc.trade.exceptions.TradeReportException;
 
 public interface ITradeReportAppDao {
 	
-	public List<TradeEntity>  fetchIncomingInstructionsData() throws TradeReportException;
-	public List<TradeEntity>  fetchOutgoingInstructionsData() throws TradeReportException;
+	public String createTradeEntry(TradeEntity tradeEntity) ;
+	public List<TradeEntity>  fetchInstructionsData() ;
 
 }

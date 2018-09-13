@@ -2,6 +2,6 @@ package com.jpmc.trade.constants;
 
 public enum CurrencyType {
 	
-	 SGP, AED, SAR, INR
+	 SGP, AED, SAR, EUR
 
 }

@@ -1,6 +1,7 @@
 package com.jpmc.trade.service;
 
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -15,51 +16,92 @@ import com.jpmc.trade.util.TradeReportAppUtil;
 public class TradeReportAppService {
 	
 	public ITradeReportAppDao iTradeReportAppDao = new TradeReportAppDaoImpl();
+	private final String INCOMING_TRADETYPE = "B";
+	private final String OUTGOING_TRADETYPE = "S";
+
 	
-	public String generateDailyIncomingTradeReport()  {
+	/**
+	 * Storing TradeEntry data
+	 * Save TradeEntry
+	 * @param tradeEntity
+	 * @return String
+	 */
+	public String createTradeEntry(TradeEntity tradeEntity) {
+		return iTradeReportAppDao.createTradeEntry(tradeEntity);
+	}
+	
+	/**
+	 * 1.Fetch all instructions data 
+	 * 2.Apply SettlementDate rule
+	 * 3.Evaluate of Incoming report generate date's totalTradeAmount in USD
+	 * @param reportDate
+	 * @return String
+	 * @throws TradeReportException
+	 */
+	public String generateIncomingTradeAmountReport(LocalDate reportDate) throws TradeReportException  {
 		String result = null;
 		try {
-			List<TradeEntity> incomingTradeEntityLst = iTradeReportAppDao.fetchIncomingInstructionsData();
-            Map<Date, Double> totalByIncomingDate = TradeReportAppUtil.evalDailyTrade(incomingTradeEntityLst);
-			
-			for (Map.Entry<Date, Double> entry : totalByIncomingDate.entrySet()) {
-				String settlementDateStr = TradeReportAppUtil.convertToDate(entry.getKey());
-				System.out.println("The Incoming trade on date is " + settlementDateStr
-						+ " ==== and settled USD amount is " + entry.getValue());
+			List<TradeEntity> incomingTradeEntityLst = iTradeReportAppDao.fetchInstructionsData();
+			for(TradeEntity tradeEntity:incomingTradeEntityLst) {
+				tradeEntity.setSettlementDate(TradeReportAppUtil.evalSettlementDate
+						(tradeEntity.getSettlementDate(), tradeEntity.getCurrency()));
 			}
+            Double totalTradeAmount = TradeReportAppUtil.evalDailyTrade(incomingTradeEntityLst,reportDate,INCOMING_TRADETYPE);
+			
+			System.out.println("The Incoming trade on date is " + reportDate
+					+ " ==== and settled USD amount is " + totalTradeAmount);
 			System.out.println("=============The Incoming Trade settlement report is completed ==============");
 			result = "SUCCESS";
-		}catch (TradeReportException e) {
-			e.printStackTrace();
+		}catch (Exception e) {
+			throw new TradeReportException("Incoming Trade Report generation failed ");
 		}
 		return result;
 	}
-	public String generateDailyOutGoingTradeReport() {
+	
+	/**
+	 * 1.Fetch all instructions data 
+	 * 2.Apply SettlementDate rule
+	 * 3.Evaluate of Outgoing trade report generate date's totalTradeAmount in USD of 
+	 * @param reportDate
+	 * @return String
+	 * @throws TradeReportException
+	 */
+	public String generateOutingTradeAmountReport(LocalDate reportDate) throws TradeReportException {
 		String result = null;
 		try {
-			List<TradeEntity> outingTradeEntityLst = iTradeReportAppDao.fetchOutgoingInstructionsData();
-             Map<Date, Double> totalByOutgoingDate = TradeReportAppUtil.evalDailyTrade(outingTradeEntityLst);
-			
-			for (Map.Entry<Date, Double> entry : totalByOutgoingDate.entrySet()) {
-				String settlementDateStr = TradeReportAppUtil.convertToDate(entry.getKey());
-				System.out.println("The Outgoing trade on date is " + settlementDateStr
-						+ " ==== and settled USD amount is " + entry.getValue());
+			List<TradeEntity> outingTradeEntityLst = iTradeReportAppDao.fetchInstructionsData();
+			for(TradeEntity tradeEntity:outingTradeEntityLst) {
+				tradeEntity.setSettlementDate(TradeReportAppUtil.evalSettlementDate
+						(tradeEntity.getSettlementDate(), tradeEntity.getCurrency()));
 			}
+			Double totalTradeAmount = TradeReportAppUtil.evalDailyTrade(outingTradeEntityLst,reportDate,OUTGOING_TRADETYPE);
+			
+			System.out.println("The Incoming trade on date is " + reportDate
+					+ " ==== and settled USD amount is " + totalTradeAmount);
 			System.out.println("=============The Outgoing Trade settlement report is completed ==============");
 			result = "SUCCESS";
-		}catch (TradeReportException e) {
-			e.printStackTrace();
+		}catch (Exception e) {
+			throw new TradeReportException("Outgoing Trade Report generation failed ");
 		}
 		return result;
 	}
-	public String generateDailyEntitiesRankingReport()  {
+	
+	/**
+	 * 1.Fetch all instructions data 
+	 * 2.Evaluate ranking of the report date's Trade Type
+	 * 
+	 * @param reportDate
+	 * @return String
+	 * @throws TradeReportException
+	 */
+	public String generateDailyEntitiesRankingReport(LocalDate reportDate) throws TradeReportException  {
 		String result = null;
 		
 		try {
 			int rank = 1;
-			List<TradeEntity> incomingTradeEntityLst = iTradeReportAppDao.fetchIncomingInstructionsData();
+			List<TradeEntity> tradeEntityLst = iTradeReportAppDao.fetchInstructionsData();
 			List<Entry<String, Double>> incomingRankinglist = TradeReportAppUtil
-					.evalEntityRakings(incomingTradeEntityLst);
+					.evalEntityRakings(tradeEntityLst,reportDate,INCOMING_TRADETYPE);
 			
 			for (Map.Entry<String, Double> entry : incomingRankinglist) {
 				System.out.println(
@@ -67,9 +109,8 @@ public class TradeReportAppService {
 			}
 			System.out.println("=============The Incoming Trade entity  ranking is completed ==============");
 			rank = 1;
-			List<TradeEntity> outingTradeEntityLst = iTradeReportAppDao.fetchOutgoingInstructionsData();
 			List<Entry<String, Double>> ougoingRankinglist = TradeReportAppUtil
-					.evalEntityRakings(outingTradeEntityLst);
+					.evalEntityRakings(tradeEntityLst,reportDate,OUTGOING_TRADETYPE);
 			
 			for (Map.Entry<String, Double> entry : ougoingRankinglist) {
 				System.out.println(
@@ -77,19 +118,12 @@ public class TradeReportAppService {
 			}
 			System.out.println("=============The Outgoing Trade entity  ranking is completed ==============");
 			result = "SUCCESS";
-		}catch (TradeReportException e) {
-			e.printStackTrace();
+		}catch (Exception e) {
+			throw new TradeReportException(" Trade Report ranking generation failed ");
 		}
 		return result;
 	}
 	
-    public static void main(String[] args) {
-		
-	    	TradeReportAppService t = new TradeReportAppService();
-		t.generateDailyIncomingTradeReport();
-		t.generateDailyOutGoingTradeReport();
-		t.generateDailyEntitiesRankingReport();
-			
-	}
+    
 
 }
